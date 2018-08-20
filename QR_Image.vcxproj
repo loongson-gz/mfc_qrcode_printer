@@ -67,6 +67,7 @@
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <AdditionalIncludeDirectories>D:\07-work__\code\wanjiale\QR_Image\3rd\curl\include;D:\07-work__\code\wanjiale\QR_Image\3rd\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -88,6 +89,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\QR_Image.exe</OutputFile>
+      <AdditionalLibraryDirectories>D:\07-work__\code\wanjiale\QR_Image\3rd\curl\lib;D:\07-work__\code\wanjiale\QR_Image\3rd\json\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>jsoncpp.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -130,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BottomView.cpp" />
+    <ClCompile Include="http_client.cpp" />
     <ClCompile Include="ImageView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="QR_Encode.cpp" />
@@ -147,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BottomView.h" />
+    <ClInclude Include="http_client.h" />
     <ClInclude Include="ImageView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="QR_Encode.h" />

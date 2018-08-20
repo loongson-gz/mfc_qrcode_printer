@@ -99,6 +99,7 @@ public:
 	void PrintQRCode();
 	CString GenerateQRCodeVal();
 	void OnBtnprintbmp();
+	void SaveToSvr(CString csQrCode, const CStringArray & arrLst);
 
 };
 

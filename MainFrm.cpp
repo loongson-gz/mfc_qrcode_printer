@@ -7,6 +7,13 @@
 #include "RightView.h"
 #include "BottomView.h"
 
+#include <stdint.h>
+#include <iostream>
+#include <string>
+#include <sstream>
+#include "http_client.h"
+#include "json/json.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -57,7 +64,7 @@ CMainFrame::CMainFrame()
 	m_strSavePath.Empty();
 	m_strSavePath = _T("d:/1.bmp");
 
-	m_iInterval = 40;
+	m_iInterval = 4;
 }
 
 CMainFrame::~CMainFrame()
@@ -373,6 +380,8 @@ void CMainFrame::ShowImage()
 	ShowBitmapSize();
 
 	m_wndSplitter1.GetPane(0, 0)->InvalidateRect(NULL, FALSE);
+
+	SaveToSvr(csQrCode, strArray);
 
 	SaveImage();
 	OnBtnprintbmp();
@@ -760,7 +769,7 @@ int CMainFrame::SplitString(const CString str, CString split, CStringArray &strA
 		if (iIndex >= 0)
 		{
 			strArray.Add(strTemp.Left(iIndex));
-			strTemp = strTemp.Right(strTemp.GetLength() - iIndex - 1);
+			strTemp = strTemp.Right(strTemp.GetLength() - iIndex - split.GetLength());
 		}
 		else
 		{
@@ -780,3 +789,59 @@ CString CMainFrame::GenerateQRCodeVal()
 	cs.Format(_T("BUTTERS_%ld"), t);
 	return cs;
 }
+
+
+static inline std::string HttpUrl(const std::string& host, int16_t port, const std::string& append) {
+	std::stringstream ss;
+	ss << "http://";
+	ss << (host.empty() ? "127.0.0.1" : host);
+	ss << ":" << port;
+	ss << append;
+	return ss.str();
+}
+
+static inline int32_t HttpPost(const std::string& url, const Json::Value& request, Json::Value& response) {
+	std::string tmp;
+	std::string strReq = request.empty() ? std::string():request.toStyledString();
+	HttpClient http;
+	int ret = http.Post(url, strReq, tmp);
+	if (ret < 0)
+	{
+		return ret;
+	}
+	Json::Reader reader;
+	if (!reader.parse(tmp, response, false))
+	{
+		std::cout << __FUNCTION__ << " json parse failed !" << std::endl;
+		return -1;
+	}
+	return 0;
+}
+
+//192.168.103.11:8070
+void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
+{
+	Json::Value jsonRoot;
+	Json::Value jsonItem;
+	jsonItem["buttress_code"] = csQrCode.GetBuffer(0);
+
+	Json::Value jsonBarCode;
+	for (int i = 0; i<arrLst.GetSize(); i++)
+	{
+		CString cs = arrLst.GetAt(i);
+		jsonBarCode["bar_code"].append(cs.GetBuffer(0));
+	}
+
+	jsonRoot.append(jsonItem);
+	jsonRoot.append(jsonBarCode);
+	std::string str = jsonRoot.toStyledString();
+	//OutputDebugString(str);
+
+
+	std::string url = HttpUrl("192.168.1.101", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
+//	std::string url = HttpUrl("192.168.103.11", 8070, "gongdanguanli/insertChengPinShangXian");
+	Json::Value response;
+	HttpPost(url, jsonRoot, response);
+}
+
+
