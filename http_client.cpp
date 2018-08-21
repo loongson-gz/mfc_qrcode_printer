@@ -59,8 +59,8 @@ int HttpClient::Post(const std::string &url, const std::string& post_str, std::s
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, OnWriteData);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&response);
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
-	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5);
-	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5);
+	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 15);
+	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 15);
 	CURLcode res = curl_easy_perform(curl);
 	if (res != CURLE_OK)
 	{

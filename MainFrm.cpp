@@ -67,7 +67,7 @@ CMainFrame::CMainFrame()
 	m_strSavePath.Empty();
 	m_strSavePath = _T("d:/1.bmp");
 
-	m_iInterval = 1;
+	m_iInterval = 10;
 	m_iSN = 1;
 	m_iProductionLineSN = 1;
 }
@@ -296,16 +296,16 @@ void CMainFrame::ShowImage()
 	CStringArray strArray;
 	int ret = SplitString(strEncodeData, csSplit, strArray);
 	printf("%d\n", ret);
-	CString csQrCode;
 	
 	if (strArray.GetSize() >= m_iInterval+1)
 	{
 		GetProductionLineSN(strArray.GetAt(0));
-		csQrCode = GenerateQRCodeVal();
+		GetProductionCode(strArray.GetAt(0));
+		m_csQrCode = GenerateQRCodeVal();
 		m_pwndBottomView->m_editSoureData.SetSel(0, -1);
 		m_pwndBottomView->m_editSoureData.Clear();
 		//m_pwndBottomView->m_editSoureData.SetWindowText(csQrCode);
-		m_pwndRightView->GetDlgItem(IDC_QRCODE)->SetWindowText(csQrCode);
+		m_pwndRightView->GetDlgItem(IDC_QRCODE)->SetWindowText(m_csQrCode);
 	}
 	else 
 	{
@@ -314,11 +314,8 @@ void CMainFrame::ShowImage()
 
 
 	int i, j;
-
 	CQR_Encode* pQR_Encode = new CQR_Encode;
-
-	m_bDataEncoded = pQR_Encode->EncodeData(nLevel, nVersion, bAutoExtent, nMaskingNo, csQrCode);
-
+	m_bDataEncoded = pQR_Encode->EncodeData(nLevel, nVersion, bAutoExtent, nMaskingNo, m_csQrCode);
 	if (m_bDataEncoded)
 	{
 		if (m_pSymbleDC != NULL)
@@ -340,7 +337,6 @@ void CMainFrame::ShowImage()
 		m_pOldBitmap = m_pSymbleDC->SelectObject(m_pSymbleBitmap);
 
 		m_pSymbleDC->PatBlt(0, 0, m_nSymbleSize, m_nSymbleSize, WHITENESS);
-
 		for (i = 0; i < pQR_Encode->m_nSymbleSize; ++i)
 		{
 			for (j = 0; j < pQR_Encode->m_nSymbleSize; ++j)
@@ -387,7 +383,7 @@ void CMainFrame::ShowImage()
 
 	m_wndSplitter1.GetPane(0, 0)->InvalidateRect(NULL, FALSE);
 
-	SaveToSvr(csQrCode, strArray);
+	SaveToSvr(m_csQrCode, strArray);
 
 	SaveImage();
 	OnBtnprintbmp();
@@ -668,6 +664,7 @@ void CMainFrame::PrintQRCode()
 
 }
 
+#if 0
 void CMainFrame::OnBtnprintbmp()
 {
 	// TODO: Add your control notification handler code here
@@ -719,7 +716,10 @@ void CMainFrame::OnBtnprintbmp()
 			Info.SetMaxPage(1); // just one page 
 			int maxw = dc.GetDeviceCaps(HORZRES);
 			int maxh = dc.GetDeviceCaps(VERTRES);
-			Info.m_rectDraw.SetRect(0, 0, maxw, maxh/2);
+			int xP = GetDeviceCaps(dc, LOGPIXELSX);	//x方向每英寸像素点数
+			int yP = GetDeviceCaps(dc, LOGPIXELSY);	//y方向每英寸像素点数
+
+			Info.m_rectDraw.SetRect(0, 0, maxw, maxh);
 			//for (UINT page = Info.GetMinPage(); page <=
 			//	Info.GetMaxPage() && bPrintingOK; page++)
 			{
@@ -745,22 +745,173 @@ void CMainFrame::OnBtnprintbmp()
 				memDC.SetMapMode(dc.GetMapMode());
 				dc.SetStretchBltMode(HALFTONE);
 				// now stretchblt to maximum width on page 
-				//dc.StretchBlt(0, 0, maxw, maxh, &memDC, 0, 0, w, h, SRCCOPY);
-				dc.StretchBlt(w*1.6, 0, w*2, h*2, &memDC, 0, 0, w, h, SRCCOPY);
+				dc.StretchBlt(0, 0, maxw, maxh, &memDC, 0, 0, w, h, SRCCOPY);
+				//dc.StretchBlt(w*1.6, 0, w*2, h*2, &memDC, 0, 0, w, h, SRCCOPY);
 
 				// clean up 
 				memDC.SelectObject(pBmp);
+
+				DOUBLE xPix = (DOUBLE)xP*10/254;	//每 mm 宽度的像素
+				DOUBLE yPix = (DOUBLE)yP*10/254;	//每 mm 高度的像素	
+				DOUBLE fAdd = 7*yPix;		//每格递增量
+				DOUBLE nTop = 10*yPix;		//第一页最上线
+				DOUBLE nLeft = 20*xPix;			//最左线
+				DOUBLE nRight = xPix*(maxw-20);	//最右线
+
+				dc.MoveTo(0, 0);
+				dc.LineTo(0, maxh);
+				CRect rc,rc1;
+				rc.SetRect(5, 5, nRight, h-5);
+				dc.DrawText(m_csQrCode, &rc, DT_CENTER | DT_VCENTER |DT_WORDBREAK );
+
 				bPrintingOK = (dc.EndPage() > 0);   // end page 
 			}
 			if (bPrintingOK)
 				dc.EndDoc(); // end a print job 
-			else dc.AbortDoc();           // abort job. 
+			else 
+				dc.AbortDoc();           // abort job. 
 			//  } 
 
 		}
 	}
 
 	
+}
+#endif
+
+void CMainFrame::OnBtnprintbmp()
+{
+	// TODO: Add your control notification handler code here
+	CString filename = m_strSavePath;
+
+	CPrintDialog printDlg(FALSE);
+	printDlg.GetDefaults();
+	
+	CDC dc;
+	if (!dc.Attach(printDlg.GetPrinterDC()))
+	{
+		AfxMessageBox(_T("No printer found!")); return;
+	}
+
+	dc.m_bPrinting = TRUE;
+	DOCINFO di;
+	// Initialise print document details 
+	::ZeroMemory(&di, sizeof(DOCINFO));
+	di.cbSize = sizeof(DOCINFO);
+	di.lpszDocName = filename;
+	BOOL bPrintingOK = dc.StartDoc(&di); // Begin a new print job 
+
+	CPrintInfo Info;
+	Info.SetMaxPage(1); // just one page 
+
+	CFont TitleFont, DetailFont, *oldfont;
+	TitleFont.CreateFont(-MulDiv(12,dc.GetDeviceCaps(LOGPIXELSY),72),
+		0,0,0,FW_NORMAL,0,0,0,GB2312_CHARSET,
+		OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,
+		VARIABLE_PITCH|FF_SWISS,_T("黑体"));
+	//细节字体
+	DetailFont.CreateFont(-MulDiv(10,dc.GetDeviceCaps(LOGPIXELSY),72),
+		0,0,0,FW_NORMAL,0,0,0,GB2312_CHARSET,
+		OUT_STROKE_PRECIS,CLIP_STROKE_PRECIS,DRAFT_QUALITY,
+		VARIABLE_PITCH|FF_SWISS,_T("宋体"));
+	//CGdiObject* pOldFont = dcPrinter.SelectStockObject(SYSTEM_FONT); 
+	int width  = GetDeviceCaps(dc,HORZSIZE);
+	int height  = GetDeviceCaps(dc,VERTSIZE);
+	int xP = GetDeviceCaps(dc, LOGPIXELSX);	//x方向每英寸像素点数
+	int yP = GetDeviceCaps(dc, LOGPIXELSY);	//y方向每英寸像素点数
+
+	DOUBLE xPix = (DOUBLE)xP*10/254;	//每 mm 宽度的像素
+	DOUBLE yPix = (DOUBLE)yP*10/254;	//每 mm 高度的像素	
+	DOUBLE fAdd = 4*yPix;		//每格递增量
+	DOUBLE nTop = 1*yPix;		//第一页最上线
+	DOUBLE nLeft = 3*xPix;			//最左线
+	DOUBLE nRight = xPix*(width-1);	//最右线
+	DOUBLE nSplitLeft = nLeft+nRight*7/16;		//中线
+
+	oldfont = dc.SelectObject(&TitleFont);
+	CRect rc,rc1,rc2,rc3,rc4,rc5,rc6,rc7,rc8,rc9;
+	CRect rc10,rc11,rc12,rc13,rc14,rc15,rc16;
+
+	//顶线
+	rc.SetRect(nLeft,nTop,nRight,nTop);
+	dc.MoveTo(rc.left,rc.bottom);
+	dc.LineTo(rc.right,rc.bottom);
+
+	rc2.SetRect(nSplitLeft, rc.bottom+xPix, nRight, rc.bottom+2*fAdd);
+	dc.DrawText(_T("型号:JSQ24-12HA5"), &rc2, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+	//底线
+	dc.MoveTo(nSplitLeft, rc2.bottom - xPix);
+	dc.LineTo(rc2.right,rc2.bottom - xPix);
+
+	rc4.SetRect(nSplitLeft, rc2.bottom+xPix, nRight,rc2.bottom+2*fAdd);
+	CString csCount;
+	csCount.Format(_T("数量:%d"), m_iInterval);
+	dc.DrawText(csCount, &rc4, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+	//底线
+	dc.MoveTo(nSplitLeft,rc4.bottom - xPix);
+	dc.LineTo(rc4.right,rc4.bottom - xPix);
+
+	rc6.SetRect(nSplitLeft, rc4.bottom+xPix, nRight,rc4.bottom+2*fAdd);
+	CString csDate;
+	csDate.Format(_T("日期:%s"), m_csDateTime);
+	dc.DrawText(csDate, &rc6, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+	//底线
+	dc.MoveTo(nSplitLeft,rc6.bottom - xPix);
+	dc.LineTo(rc6.right,rc6.bottom - xPix);
+
+	rc8.SetRect(nSplitLeft, rc6.bottom+xPix, nRight,rc6.bottom+fAdd+yPix);
+	dc.DrawText(_T("ERP:C8901692"), &rc8, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+
+	//底线
+	dc.MoveTo(nLeft,rc8.bottom);
+	dc.LineTo(rc8.right,rc8.bottom);
+
+	//左线
+	dc.MoveTo(nLeft, nTop);
+	dc.LineTo(nLeft, rc8.bottom);
+
+	//中分线
+	dc.MoveTo(nSplitLeft , nTop);
+	dc.LineTo(nSplitLeft , rc8.bottom);
+
+	//右线
+	dc.MoveTo(nRight, nTop);
+	dc.LineTo(nRight, rc8.bottom);
+
+	//CString filename(_T("d:/1.bmp"));
+	CBitmap bitmap;
+	if (!bitmap.Attach(LoadImage(AfxGetInstanceHandle(), filename, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE)))
+	{
+		AfxMessageBox(_T("Error loading bitmap!")); return;
+	}
+	BITMAP bm;
+	bitmap.GetBitmap(&bm);
+	int w = bm.bmWidth;
+	int h = bm.bmHeight;
+	// create memory device context 
+	CDC memDC;
+	memDC.CreateCompatibleDC(&dc);
+	CBitmap *pBmp = memDC.SelectObject(&bitmap);
+	memDC.SetMapMode(dc.GetMapMode());
+	dc.SetStretchBltMode(HALFTONE);
+	// now stretchblt to maximum width on page 
+	dc.StretchBlt(rc.left + 5*xPix, rc.top + yPix, w, h, &memDC, 0, 0, w, h, SRCCOPY);
+	//dc.StretchBlt(w*1.6, 0, w*2, h*2, &memDC, 0, 0, w, h, SRCCOPY);
+
+	// clean up 
+	memDC.SelectObject(pBmp);
+
+	rc9.SetRect(rc.left + xPix, rc.top + yPix + h + fAdd, nLeft+nRight/2, rc6.bottom+fAdd);
+	dc.DrawText(m_csQrCode, &rc9, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+
+	bPrintingOK = (dc.EndPage() > 0);   // end page  
+	if (bPrintingOK)
+		dc.EndDoc(); // end a print job 
+	else 
+		dc.AbortDoc();           // abort job. 
+	TitleFont.DeleteObject();
+	DetailFont.DeleteObject();
+
 }
 
 
@@ -791,8 +942,11 @@ CString CMainFrame::GenerateQRCodeVal()
 {
 	SYSTEMTIME t;
 	GetSystemTime(&t);
+
+	m_csDateTime.Format(_T("%02d%02d%02d"), t.wYear-2000, t.wMonth, t.wDay);
+
 	CString cs;
-	cs.Format(_T("ZJ%02d%02d%02d%02d%03d"), t.wYear-2000, t.wMonth, t.wDay, m_iProductionLineSN, m_iSN++);
+	cs.Format(_T("ZJ%s%02d%03d"), m_csDateTime, m_iProductionLineSN, m_iSN++);
 	return cs;
 }
 
@@ -877,6 +1031,12 @@ void CMainFrame::GetProductionLineSN(CString sn)
 	int pos = sn.GetLength() - 6;
 	CString cs = sn.Mid(pos, 2);
 	m_iProductionLineSN = atoi(cs.GetBuffer(0));
+}
+
+void CMainFrame::GetProductionCode(CString cs)
+{
+	int pos = 10;
+	m_csProdutionCode = cs.Mid(pos, 5);
 }
 
 void CMainFrame::OnTimer(UINT_PTR nIDEvent)
