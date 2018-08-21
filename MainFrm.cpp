@@ -800,9 +800,12 @@ static inline std::string HttpUrl(const std::string& host, int16_t port, const s
 	return ss.str();
 }
 
-static inline int32_t HttpPost(const std::string& url, const Json::Value& request, Json::Value& response) {
+static inline int32_t HttpPost(const std::string& url, const Json::Value& request, Json::Value& response) 
+{
 	std::string tmp;
-	std::string strReq = request.empty() ? std::string():request.toStyledString();
+	Json::FastWriter writer;
+	std::string strReq = writer.write(request);
+	//std::string strReq = request.empty() ? std::string():request.toStyledString();
 	HttpClient http;
 	int ret = http.Post(url, strReq, tmp);
 	if (ret < 0)
@@ -825,23 +828,27 @@ void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
 	Json::Value jsonItem;
 	jsonItem["buttress_code"] = csQrCode.GetBuffer(0);
 
-	Json::Value jsonBarCode;
+	//Json::Value jsonBarCode;
 	for (int i = 0; i<arrLst.GetSize(); i++)
 	{
 		CString cs = arrLst.GetAt(i);
-		jsonBarCode["bar_code"].append(cs.GetBuffer(0));
+		jsonItem["bar_code"].append(cs.GetBuffer(0));
 	}
 
 	jsonRoot.append(jsonItem);
-	jsonRoot.append(jsonBarCode);
-	std::string str = jsonRoot.toStyledString();
+	//jsonRoot.append(jsonBarCode);
+
+	Json::FastWriter writer;
+	std::string str = writer.write(jsonItem);
+
+	//std::string str = jsonRoot.toStyledString();
 	//OutputDebugString(str);
 
 
 	std::string url = HttpUrl("192.168.1.101", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
 //	std::string url = HttpUrl("192.168.103.11", 8070, "gongdanguanli/insertChengPinShangXian");
 	Json::Value response;
-	HttpPost(url, jsonRoot, response);
+	HttpPost(url, jsonItem, response);
 }
 
 
