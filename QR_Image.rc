@@ -48,8 +48,8 @@ BEGIN
     "LANGUAGE 17, 1\r\n"
     "#pragma code_page(932)\r\n"
     "#endif //_WIN32\r\n"
-    "#include ""res\\QR_Image.rc2""  // Microsoft Visual C++ ???ûÛò^??ùõ??????ò^?\r\n"
-    "#include ""l.jpn\\afxres.rc""          // ??????ò^???\r\n"
+    "#include ""res\\QR_Image.rc2""  // Microsoft Visual C++ ????????????????\r\n"
+    "#include ""l.jpn\\afxres.rc""          // ??????????\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -208,7 +208,7 @@ IDD_BOTTOMVIEW DIALOGEX 0, 0, 236, 179
 STYLE DS_SETFONT | WS_CHILD
 FONT 9, "£Õ£” £–•¥•∑•√•Ø", 0, 0, 0x0
 BEGIN
-    LTEXT           "±‡º≠ƒ⁄»›",IDC_STATIC,5,3,32,9
+    LTEXT           "…®¬Îƒ⁄»›",IDC_STATIC,5,3,32,9
     EDITTEXT        IDC_EDITSOURCEDATA,4,14,228,160,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
 END
 
@@ -505,8 +505,8 @@ END
 LANGUAGE 17, 1
 #pragma code_page(932)
 #endif //_WIN32
-#include "res\QR_Image.rc2"  // Microsoft Visual C++ ???ÉcÅ[Éã?ï“????Éä?Å[?
-#include "l.jpn\afxres.rc"          // ?????É|Å[???
+#include "res\QR_Image.rc2"  // Microsoft Visual C++ ???ôHÂh??ì‹??????Âh?
+#include "l.jpn\afxres.rc"          // ??????Âh???
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

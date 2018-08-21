@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_WM_CREATE()
 	ON_WM_SETFOCUS()
 	ON_WM_GETMINMAXINFO()
+	ON_WM_TIMER()
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE_AS, OnUpdateFileSaveAs)
 	ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, OnUpdateFileSave)
 	ON_COMMAND(ID_FILE_SAVE, OnFileSave)
@@ -54,6 +55,8 @@ static UINT indicators[] =
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame 
 
+#define QUIT_ID 100
+
 CMainFrame::CMainFrame()
 {
 	m_bInitSplit = FALSE;
@@ -64,7 +67,9 @@ CMainFrame::CMainFrame()
 	m_strSavePath.Empty();
 	m_strSavePath = _T("d:/1.bmp");
 
-	m_iInterval = 4;
+	m_iInterval = 1;
+	m_iSN = 1;
+	m_iProductionLineSN = 1;
 }
 
 CMainFrame::~CMainFrame()
@@ -295,6 +300,7 @@ void CMainFrame::ShowImage()
 	
 	if (strArray.GetSize() >= m_iInterval+1)
 	{
+		GetProductionLineSN(strArray.GetAt(0));
 		csQrCode = GenerateQRCodeVal();
 		m_pwndBottomView->m_editSoureData.SetSel(0, -1);
 		m_pwndBottomView->m_editSoureData.Clear();
@@ -783,10 +789,10 @@ int CMainFrame::SplitString(const CString str, CString split, CStringArray &strA
 
 CString CMainFrame::GenerateQRCodeVal()
 {
-	//GetSystemTime();
-	DWORD t = GetTickCount();
+	SYSTEMTIME t;
+	GetSystemTime(&t);
 	CString cs;
-	cs.Format(_T("BUTTERS_%ld"), t);
+	cs.Format(_T("ZJ%02d%02d%02d%02d%03d"), t.wYear-2000, t.wMonth, t.wDay, m_iProductionLineSN, m_iSN++);
 	return cs;
 }
 
@@ -848,7 +854,37 @@ void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
 	std::string url = HttpUrl("192.168.1.101", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
 //	std::string url = HttpUrl("192.168.103.11", 8070, "gongdanguanli/insertChengPinShangXian");
 	Json::Value response;
-	HttpPost(url, jsonItem, response);
+	int ret = HttpPost(url, jsonItem, response);
+	if (ret !=0)
+	{
+		SetTimer(QUIT_ID,1000,NULL);
+		AfxMessageBox(_T("入库失败"));
+		return;
+	}
+
+	bool status = response["status"].asBool();
+	if (!status)
+	{
+		SetTimer(QUIT_ID,1000,NULL);
+		CString message = response["message"].asCString();
+		AfxMessageBox(message);
+	}
+
 }
 
+void CMainFrame::GetProductionLineSN(CString sn)
+{
+	int pos = sn.GetLength() - 6;
+	CString cs = sn.Mid(pos, 2);
+	m_iProductionLineSN = atoi(cs.GetBuffer(0));
+}
 
+void CMainFrame::OnTimer(UINT_PTR nIDEvent)
+{
+	if (nIDEvent == QUIT_ID)
+	{
+		KillTimer(nIDEvent);
+		keybd_event(VK_RETURN,0,0,0);
+		keybd_event(VK_RETURN,0,KEYEVENTF_KEYUP,0);//模拟"回车"命令
+	}
+}

@@ -88,6 +88,7 @@ protected:
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
 	afx_msg void OnFileSave();
 	afx_msg void OnFileSaveAs();
+	void OnTimer(UINT_PTR nIDEvent);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -98,8 +99,12 @@ public:
 	int SplitString(const CString str, CString split, CStringArray & strArray);
 	void PrintQRCode();
 	CString GenerateQRCodeVal();
+	void GetProductionLineSN(CString sn);
 	void OnBtnprintbmp();
 	void SaveToSvr(CString csQrCode, const CStringArray & arrLst);
+
+	int m_iSN;						//Á÷Ë®ºÅ
+	int m_iProductionLineSN;		//¼ìÏßºÅ
 
 };
 
