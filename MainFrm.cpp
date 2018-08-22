@@ -172,6 +172,10 @@ BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 
 	m_bInitSplit = TRUE;
 
+	CString cs;
+	cs.Format(_T("万家乐垛码生成器 BUILD:%s %s"), __DATE__, __TIME__);
+	SetWindowText(cs);
+
 	return TRUE;
 }
 
@@ -1005,8 +1009,9 @@ void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
 	//OutputDebugString(str);
 
 
-	std::string url = HttpUrl("192.168.1.101", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
-//	std::string url = HttpUrl("192.168.103.11", 8070, "gongdanguanli/insertChengPinShangXian");
+	//std::string url = HttpUrl("192.168.1.101", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
+	std::string url = HttpUrl("192.168.103.11", 8070, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
+
 	Json::Value response;
 	int ret = HttpPost(url, jsonItem, response);
 	if (ret !=0)
