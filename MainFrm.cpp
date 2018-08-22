@@ -297,9 +297,14 @@ void CMainFrame::ShowImage()
 	m_pwndBottomView->m_editSoureData.GetWindowText(strEncodeData);
 
 	CString csSplit("\r\n");
+	std::set<CString> strSet;
+	SplitString(strEncodeData, csSplit, strSet);
+
 	CStringArray strArray;
-	int ret = SplitString(strEncodeData, csSplit, strArray);
-	printf("%d\n", ret);
+	for (auto it=strSet.begin(); it!=strSet.end(); ++it)
+	{
+		strArray.Add(*it);
+	}
 	
 	m_iInterval = m_pwndBottomView->GetInterval();
 	if (strArray.GetSize() >= m_iInterval+1)
@@ -930,7 +935,11 @@ int CMainFrame::SplitString(const CString str, CString split, CStringArray &strA
 		iIndex = strTemp.Find(split);
 		if (iIndex >= 0)
 		{
-			strArray.Add(strTemp.Left(iIndex));
+			CString cs = strTemp.Left(iIndex);
+			if (!cs.IsEmpty())
+			{
+				strArray.Add(cs);
+			}
 			strTemp = strTemp.Right(strTemp.GetLength() - iIndex - split.GetLength());
 		}
 		else
@@ -941,6 +950,33 @@ int CMainFrame::SplitString(const CString str, CString split, CStringArray &strA
 	strArray.Add(strTemp);
 
 	return strArray.GetSize();
+}
+
+int CMainFrame::SplitString(const CString str, CString split, std::set<CString> &strArray)
+{
+	strArray.clear();
+	CString strTemp = str;
+	int iIndex = 0;
+	while (1)
+	{
+		iIndex = strTemp.Find(split);
+		if (iIndex >= 0)
+		{
+			CString cs = strTemp.Left(iIndex);
+			if (!cs.IsEmpty())
+			{
+				strArray.insert(cs);
+			}
+			strTemp = strTemp.Right(strTemp.GetLength() - iIndex - split.GetLength());
+		}
+		else
+		{
+			break;
+		}
+	}
+	strArray.insert(strTemp);
+
+	return strArray.size();
 }
 
 CString CMainFrame::GenerateQRCodeVal()

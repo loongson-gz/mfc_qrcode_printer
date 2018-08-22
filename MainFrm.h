@@ -12,6 +12,7 @@
 #include "ImageView.h"
 #include "RightView.h"
 #include "BottomView.h"
+#include <set>
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame ƒNƒ‰ƒX
@@ -97,6 +98,7 @@ public:
 	int m_iInterval;
 
 	int SplitString(const CString str, CString split, CStringArray & strArray);
+	int SplitString(const CString str, CString split, std::set<CString> &strArray);
 	void PrintQRCode();
 	CString GenerateQRCodeVal();
 	void GetProductionLineSN(CString sn);
