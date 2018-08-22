@@ -1,6 +1,6 @@
 /*
 *
-* Copyright (c) 2018, winhi intelligent technology. All Rights Reserved.
+* Copyright (c) 2018,All Rights Reserved.
 *
 *
 *
