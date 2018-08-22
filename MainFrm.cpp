@@ -57,6 +57,50 @@ static UINT indicators[] =
 
 #define QUIT_ID 100
 
+static int UTF8ToGBK(CString &strOut,const char* szSrc)
+{
+
+	if(szSrc==NULL)
+	{
+		strOut="";
+		return -1;
+	}
+	WCHAR *strSrc;
+	TCHAR *szRes;
+	int i = MultiByteToWideChar(CP_UTF8, 0, szSrc, -1, NULL, 0);
+	strSrc = new WCHAR[i+1];
+	MultiByteToWideChar(CP_UTF8, 0, szSrc, -1, strSrc, i);
+	i = WideCharToMultiByte(CP_ACP, 0, strSrc, -1, NULL, 0, NULL, NULL);
+	szRes = new TCHAR[i+1];
+	WideCharToMultiByte(CP_ACP, 0, strSrc, -1, szRes, i, NULL, NULL);
+	strOut = szRes;
+	delete []strSrc;
+	delete []szRes;
+	return 0;
+}
+
+static int GBKToUTF8(CString& strOut, char* szSrc)
+{
+	if(szSrc==NULL)
+	{
+		strOut="";
+		return -1;
+	}
+	WCHAR *strSrc;
+	TCHAR *szRes;
+	int i = MultiByteToWideChar(CP_ACP, 0, szSrc, -1, NULL, 0);
+	strSrc = new WCHAR[i+1];
+	MultiByteToWideChar(CP_ACP, 0, szSrc, -1, strSrc, i);
+	i = WideCharToMultiByte(CP_UTF8, 0, strSrc, -1, NULL, 0, NULL, NULL);
+	szRes = new TCHAR[i+1];
+	WideCharToMultiByte(CP_UTF8, 0, strSrc, -1, szRes, i, NULL, NULL);
+	strOut = szRes;
+	delete []strSrc;
+	delete []szRes;
+	return 0;
+}
+
+
 CMainFrame::CMainFrame()
 {
 	m_bInitSplit = FALSE;
@@ -1063,7 +1107,9 @@ void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
 	{
 		SetTimer(QUIT_ID,1000,NULL);
 		CString message = response["message"].asCString();
-		AfxMessageBox(message);
+		CString msg;
+		UTF8ToGBK(msg, message.GetBuffer(0));
+		AfxMessageBox(msg);
 	}
 
 }
@@ -1090,3 +1136,4 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 		keybd_event(VK_RETURN,0,KEYEVENTF_KEYUP,0);//Ä£Äâ"»Ø³µ"ÃüÁî
 	}
 }
+
