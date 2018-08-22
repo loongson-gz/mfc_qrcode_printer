@@ -63,6 +63,11 @@ protected:
 	afx_msg void OnChangeSourceData();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+	CEdit m_ctrlInterval;
+	int m_iInterval;
+
+	int GetInterval();
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -70,3 +75,4 @@ protected:
 //{{AFX_INSERT_LOCATION}}
 
 #endif // !defined(AFX_BOTTOMVIEW_H__71E48AFF_E3E1_4C80_B69D_8CA5A9D4017D__INCLUDED_)
+#include "afxwin.h"

@@ -301,6 +301,7 @@ void CMainFrame::ShowImage()
 	int ret = SplitString(strEncodeData, csSplit, strArray);
 	printf("%d\n", ret);
 	
+	m_iInterval = m_pwndBottomView->GetInterval();
 	if (strArray.GetSize() >= m_iInterval+1)
 	{
 		GetProductionLineSN(strArray.GetAt(0));

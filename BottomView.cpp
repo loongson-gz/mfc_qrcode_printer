@@ -16,6 +16,7 @@ IMPLEMENT_DYNCREATE(CBottomView, CFormView)
 
 CBottomView::CBottomView()
 	: CFormView(CBottomView::IDD)
+	, m_iInterval(10)
 {
 	//{{AFX_DATA_INIT(CBottomView)
 	//}}AFX_DATA_INIT
@@ -33,6 +34,8 @@ void CBottomView::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CBottomView)
 	DDX_Control(pDX, IDC_EDITSOURCEDATA, m_editSoureData);
 	//}}AFX_DATA_MAP
+	DDX_Control(pDX, IDC_EDIT1, m_ctrlInterval);
+	DDX_Text(pDX, IDC_EDIT1, m_iInterval);
 }
 
 
@@ -125,4 +128,11 @@ void CBottomView::OnChangeSourceData()
 {
 	if (m_bInitControl)
 		((CMainFrame*)(AfxGetApp()->m_pMainWnd))->ShowImage();
+}
+
+
+int CBottomView::GetInterval()
+{
+	UpdateData(TRUE);
+	return m_iInterval;
 }
