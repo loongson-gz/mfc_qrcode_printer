@@ -103,16 +103,15 @@ public:
 	CString GenerateQRCodeVal();
 	void GetProductionLineSN(CString sn);
 	void GetProductionCode(CString cs);
+	CString GetProductionCode2(CString cs);
 	void OnBtnprintbmp();
 	void SaveToSvr(CString csQrCode, const CStringArray & arrLst);
-
 
 	int m_iSN;						//流水号
 	int m_iProductionLineSN;		//检线号
 	CString m_csProdutionCode;		//产品条码
 	CString m_csDateTime;			//当前日期
 	CString m_csQrCode;				//生成二维码数值
-
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -351,7 +351,7 @@ void CMainFrame::ShowImage()
 	}
 	
 	m_iInterval = m_pwndBottomView->GetInterval();
-	if (strArray.GetSize() >= m_iInterval+1)
+	if (strArray.GetSize() >= m_iInterval)
 	{
 		GetProductionLineSN(strArray.GetAt(0));
 		GetProductionCode(strArray.GetAt(0));
@@ -1128,6 +1128,13 @@ void CMainFrame::GetProductionCode(CString cs)
 {
 	int pos = 10;
 	m_csProdutionCode = cs.Mid(pos, 5);
+}
+
+CString CMainFrame::GetProductionCode2(CString cs)
+{
+	int pos = 10;
+	CString productionCode = cs.Mid(pos, 5);
+	return productionCode;
 }
 
 void CMainFrame::OnTimer(UINT_PTR nIDEvent)
