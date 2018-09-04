@@ -1018,7 +1018,10 @@ int CMainFrame::SplitString(const CString str, CString split, std::set<CString> 
 			break;
 		}
 	}
-	strArray.insert(strTemp);
+	if (!strTemp.IsEmpty())
+	{
+		strArray.insert(strTemp);
+	}
 
 	return strArray.size();
 }
@@ -1090,7 +1093,7 @@ void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
 	//OutputDebugString(str);
 
 
-	//std::string url = HttpUrl("192.168.1.101", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
+	//std::string url = HttpUrl("192.168.1.107", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
 	std::string url = HttpUrl("192.168.103.11", 8070, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
 
 	Json::Value response;
