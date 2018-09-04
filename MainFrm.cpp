@@ -349,23 +349,41 @@ void CMainFrame::ShowImage()
 	{
 		strArray.Add(*it);
 	}
-	
-	m_iInterval = m_pwndBottomView->GetInterval();
-	if (strArray.GetSize() >= m_iInterval)
+
+	bool bSwitch = IsSwitchProdution(strArray); //是否换产品线
+	if (!bSwitch)
+	{
+		m_iInterval = m_pwndBottomView->GetInterval();
+		if (strArray.GetSize() >= m_iInterval)
+		{
+			GetProductionLineSN(strArray.GetAt(0));
+			GetProductionCode(strArray.GetAt(0));
+			m_csQrCode = GenerateQRCodeVal();
+			m_pwndBottomView->m_editSoureData.SetSel(0, -1);
+			m_pwndBottomView->m_editSoureData.Clear();
+			//m_pwndBottomView->m_editSoureData.SetWindowText(csQrCode);
+			m_pwndRightView->GetDlgItem(IDC_QRCODE)->SetWindowText(m_csQrCode);
+		}
+		else 
+		{
+			return ;
+		}
+	}
+	else
 	{
 		GetProductionLineSN(strArray.GetAt(0));
 		GetProductionCode(strArray.GetAt(0));
 		m_csQrCode = GenerateQRCodeVal();
-		m_pwndBottomView->m_editSoureData.SetSel(0, -1);
-		m_pwndBottomView->m_editSoureData.Clear();
+// 		m_pwndBottomView->m_editSoureData.SetSel(0, -1);
+// 		m_pwndBottomView->m_editSoureData.Clear();
+		CString cs = strArray.GetAt(strArray.GetSize()-1) + csSplit;
+		m_pwndBottomView->m_editSoureData.SetWindowText(cs);
+		m_pwndBottomView->m_editSoureData.SetSel(cs.GetLength(), cs.GetLength(), FALSE);
+		m_pwndBottomView->m_editSoureData.SetFocus();
 		//m_pwndBottomView->m_editSoureData.SetWindowText(csQrCode);
 		m_pwndRightView->GetDlgItem(IDC_QRCODE)->SetWindowText(m_csQrCode);
 	}
-	else 
-	{
-		return ;
-	}
-
+	
 
 	int i, j;
 	CQR_Encode* pQR_Encode = new CQR_Encode;
@@ -1147,3 +1165,18 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 	}
 }
 
+
+bool CMainFrame::IsSwitchProdution(const CStringArray & arrLst)
+{
+	for (int i=0; i<arrLst.GetSize()-1; i++)
+	{
+		CString code1 = GetProductionCode2(arrLst.GetAt(i));
+		CString code2 = GetProductionCode2(arrLst.GetAt(i+1));
+		if (code1 != code2)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}

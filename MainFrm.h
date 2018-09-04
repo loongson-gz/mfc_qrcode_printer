@@ -106,6 +106,7 @@ public:
 	CString GetProductionCode2(CString cs);
 	void OnBtnprintbmp();
 	void SaveToSvr(CString csQrCode, const CStringArray & arrLst);
+	bool IsSwitchProdution(const CStringArray & arrLst);
 
 	int m_iSN;						//Á÷Ë®ºÅ
 	int m_iProductionLineSN;		//¼ìÏßºÅ
