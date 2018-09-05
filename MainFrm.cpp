@@ -374,13 +374,10 @@ void CMainFrame::ShowImage()
 		GetProductionLineSN(strArray.GetAt(0));
 		GetProductionCode(strArray.GetAt(0));
 		m_csQrCode = GenerateQRCodeVal();
-// 		m_pwndBottomView->m_editSoureData.SetSel(0, -1);
-// 		m_pwndBottomView->m_editSoureData.Clear();
 		CString cs = strArray.GetAt(strArray.GetSize()-1) + csSplit;
 		m_pwndBottomView->m_editSoureData.SetWindowText(cs);
 		m_pwndBottomView->m_editSoureData.SetSel(cs.GetLength(), cs.GetLength(), FALSE);
 		m_pwndBottomView->m_editSoureData.SetFocus();
-		//m_pwndBottomView->m_editSoureData.SetWindowText(csQrCode);
 		m_pwndRightView->GetDlgItem(IDC_QRCODE)->SetWindowText(m_csQrCode);
 	}
 	
@@ -910,7 +907,7 @@ void CMainFrame::OnBtnprintbmp()
 	dc.LineTo(rc.right,rc.bottom);
 
 	rc2.SetRect(nSplitLeft, rc.bottom+xPix, nRight, rc.bottom+2*fAdd);
-	dc.DrawText(_T("型号:JSQ24-12HA5"), &rc2, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+	dc.DrawText(_T("型号:JZT-K401B"), &rc2, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
 	//底线
 	dc.MoveTo(nSplitLeft, rc2.bottom - xPix);
 	dc.LineTo(rc2.right,rc2.bottom - xPix);
@@ -932,7 +929,7 @@ void CMainFrame::OnBtnprintbmp()
 	dc.LineTo(rc6.right,rc6.bottom - xPix);
 
 	rc8.SetRect(nSplitLeft, rc6.bottom+xPix, nRight,rc6.bottom+fAdd+yPix);
-	dc.DrawText(_T("ERP:C8901692"), &rc8, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+	dc.DrawText(_T("ERP:C89205692"), &rc8, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
 
 	//底线
 	dc.MoveTo(nLeft,rc8.bottom);
@@ -1009,7 +1006,8 @@ int CMainFrame::SplitString(const CString str, CString split, CStringArray &strA
 			break;
 		}
 	}
-	strArray.Add(strTemp);
+	//if (!strTemp.IsEmpty())
+	//	strArray.Add(strTemp);
 
 	return strArray.GetSize();
 }
@@ -1036,10 +1034,10 @@ int CMainFrame::SplitString(const CString str, CString split, std::set<CString> 
 			break;
 		}
 	}
-	if (!strTemp.IsEmpty())
-	{
-		strArray.insert(strTemp);
-	}
+	//if (!strTemp.IsEmpty())
+	//{
+	//	strArray.insert(strTemp);
+	//}
 
 	return strArray.size();
 }
@@ -1111,7 +1109,7 @@ void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
 	//OutputDebugString(str);
 
 
-	//std::string url = HttpUrl("192.168.1.107", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
+	//std::string url = HttpUrl("192.168.1.116", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
 	std::string url = HttpUrl("192.168.103.11", 8070, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
 
 	Json::Value response;
