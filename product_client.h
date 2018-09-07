@@ -20,7 +20,8 @@ public:
 	~ProductClient();
 
 	int Init();
-	int GetData(stProductInfo &data, std::string productCode);
+	int GetProductInfo(std::string productCode, stProductInfo &data);
+	int GetBarcodeRule(TBarcodeRuleLst &ruleLst);
 private:
 	DbHelper *m_pDbHelper;
 	stSQLConf m_conf;

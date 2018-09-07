@@ -8,8 +8,17 @@
 typedef struct stProductInfo_
 {
 	std::string strErpCode;
-	std::string strKind;
+	std::string strKind;		//产品型号
 }stProductInfo;
+
+typedef struct stBarcodeRule_
+{
+	std::string strManufacturerCode;
+	int iProductCodeLen;				//产品型号码长度
+	int iWorkshopNoPos;					//车间号位置
+}stBarcodeRule;
+
+typedef std::vector<stBarcodeRule> TBarcodeRuleLst;
 
 class DbHelper {
 public:
@@ -20,7 +29,7 @@ public:
 	int ConnectToSvr();
 	int InsertData(const char *szSql);
 	int GetData(const char *szSql, stProductInfo &res);
-
+	int GetData(const char *szSql, TBarcodeRuleLst &res);
 private:
 	//Poco::Data::SessionPool *m_pool;
 	//Poco::Data::Session *m_ses;

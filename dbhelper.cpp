@@ -116,3 +116,29 @@ int DbHelper::GetData(const char * szSql, stProductInfo &res)
 	return 0;
 }
 
+int DbHelper::GetData(const char * szSql, TBarcodeRuleLst & res)
+{
+	if (!m_bConnect || !m_ses)
+	{
+		return -1;
+	}
+	try
+	{
+		stBarcodeRule rule;
+		Poco::Data::Statement sql(*m_ses);
+		sql << szSql, into(rule.strManufacturerCode), into(rule.iProductCodeLen), into(rule.iWorkshopNoPos), range(0, 1);
+		while (!sql.done())
+		{
+			sql.execute();
+			res.push_back(rule);
+		}
+	}
+	catch (const std::exception& e)
+	{
+		printf("%s:%d %s", __FUNCTION__, __LINE__, e.what());
+		return -1;
+	}
+
+	return 0;
+}
+

@@ -119,6 +119,12 @@ CMainFrame::CMainFrame()
 	m_iInterval = 40;
 	m_iSN = 1;
 	m_iProductionLineSN = 1;
+
+	m_bGetRule = false;
+
+	m_iProductPos = 10;
+	m_iProductCodeLen = 5;
+	m_iWorkshopPos = 6;
 }
 
 CMainFrame::~CMainFrame()
@@ -361,8 +367,9 @@ void CMainFrame::ShowImage()
 		m_iInterval = m_pwndBottomView->GetInterval();
 		if (strArray.GetSize() >= m_iInterval)
 		{
-			GetProductionLineSN(strArray.GetAt(0));
-			GetProductionCode(strArray.GetAt(0));
+			GetProductionLineSNAndProductionCode(strArray.GetAt(0));
+			//GetProductionLineSN(strArray.GetAt(0));
+			//GetProductionCode(strArray.GetAt(0));
 			GetErpCodeAndProductKind();
 			m_csQrCode = GenerateQRCodeVal();
 			m_pwndBottomView->m_editSoureData.SetSel(0, -1);
@@ -377,8 +384,9 @@ void CMainFrame::ShowImage()
 	}
 	else
 	{
-		GetProductionLineSN(strArray.GetAt(0));
-		GetProductionCode(strArray.GetAt(0));
+		GetProductionLineSNAndProductionCode(strArray.GetAt(0));
+		//GetProductionLineSN(strArray.GetAt(0));
+		//GetProductionCode(strArray.GetAt(0));
 		GetErpCodeAndProductKind();
 		m_csQrCode = GenerateQRCodeVal();
 		CString cs = strArray.GetAt(strArray.GetSize()-1) + csSplit;
@@ -1123,69 +1131,141 @@ void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
 	int ret = HttpPost(url, jsonItem, response);
 	if (ret !=0)
 	{
-		SetTimer(QUIT_ID,1000,NULL);
-		AfxMessageBox(_T("入库失败"));
+		CString msg;
+		msg.Format(_T("入库失败"));
+		OutputDebugString(msg);
+#ifdef _DEBUG
+		SetTimer(QUIT_ID, 1000, NULL);
+		AfxMessageBox(msg);
+#endif
 		return;
 	}
 
 	bool status = response["status"].asBool();
 	if (!status)
 	{
-		SetTimer(QUIT_ID,1000,NULL);
 		CString message = response["message"].asCString();
 		CString msg;
 		UTF8ToGBK(msg, message.GetBuffer(0));
+		OutputDebugString(msg);
+#ifdef _DEBUG
+		SetTimer(QUIT_ID,1000,NULL);
 		AfxMessageBox(msg);
+#endif
 	}
 
 }
 
-void CMainFrame::GetProductionLineSN(CString sn)
+void CMainFrame::GetProductionLineSN(CString sn, int pos)
 {
-	int pos = sn.GetLength() - 6;
-	CString cs = sn.Mid(pos, 2);
-	m_iProductionLineSN = atoi(cs.GetBuffer(0));
+	if (pos != 0)
+	{
+		int p = sn.GetLength() - pos;
+		CString cs = sn.Mid(p, 2);
+		m_iProductionLineSN = atoi(cs.GetBuffer(0));
+	}
+	else
+	{
+		m_iProductionLineSN = 1;
+	}
+
 }
 
-void CMainFrame::GetProductionCode(CString cs)
+CString CMainFrame::GetProductionCode(CString cs, int pos, int len)
 {
-	int pos = 10;
-	m_csProdutionCode = cs.Mid(pos, 5);
+	CString productionCode = cs.Mid(pos, len);
+	m_csProdutionCode = productionCode;
+	return productionCode;
 }
 
 void CMainFrame::GetErpCodeAndProductKind()
 {
 	if (!m_pc)
 	{
-		stSQLConf conf;
-		memset(&conf, 0, sizeof(conf));
-		//strcpy(conf.szIpAddr, "127.0.0.1");
-		//strcpy(conf.szUser, "admin");
-		//strcpy(conf.szDbName, "product_db");
-		strcpy(conf.szDnsName, "dsn_mysql1");
-
-		m_pc = new ProductClient(conf);
-		int ret = m_pc->Init();
-		if (ret != 0)
-		{
-			SetTimer(QUIT_ID, 2000, NULL);
-			CString msg;
-			msg.Format(_T("连接数据库失败,%s"), conf.szDnsName);
-			AfxMessageBox(msg);
-		}
+		InitDB();
 	}
 	stProductInfo info;
-	m_pc->GetData(info, m_csProdutionCode.GetBuffer(0));
+	m_pc->GetProductInfo(m_csProdutionCode.GetBuffer(0), info);
 	m_csErpCode.Format(_T("ERP:%s"), info.strErpCode.c_str());
 	m_csProductKind.Format(_T("型号:%s"), info.strKind.c_str());
 }
 
-CString CMainFrame::GetProductionCode2(CString cs)
+void CMainFrame::GetProductionLineSNAndProductionCode(CString productSN)
 {
-	int pos = 10;
-	CString productionCode = cs.Mid(pos, 5);
-	return productionCode;
+	m_iProductPos = 10;
+	m_iProductCodeLen = 5;
+	m_iWorkshopPos = 6;
+	for (auto it= m_ruleLst.begin(); it!= m_ruleLst.end(); ++it)
+	{
+		stBarcodeRule rule = *it;
+		if (rule.strManufacturerCode.empty())
+		{
+			continue;
+		}
+		int len = 3 + rule.strManufacturerCode.length();
+		CString cs;
+		cs.Format(_T("010%s"), rule.strManufacturerCode.c_str());
+
+		CString tmp = productSN.Left(len);
+		if (tmp.Compare(cs) == 0)
+		{
+			m_iProductPos = len;
+			m_iWorkshopPos = rule.iWorkshopNoPos;
+			m_iProductCodeLen = rule.iProductCodeLen;
+			break;
+		}
+	}
+
+	GetProductionCode(productSN, m_iProductPos, m_iProductCodeLen);
+	GetProductionLineSN(productSN, m_iWorkshopPos);
 }
+
+void CMainFrame::GetProductRule()
+{
+	if (!m_pc)
+	{
+		InitDB();
+	}
+	if (!m_bGetRule)
+	{
+		//TBarcodeRuleLst ruleLst;
+		int ret = m_pc->GetBarcodeRule(m_ruleLst);
+		if (ret == 0)
+		{
+			m_bGetRule = true;
+		}
+	}
+
+}
+
+int CMainFrame::InitDB()
+{
+	stSQLConf conf;
+	memset(&conf, 0, sizeof(conf));
+	//strcpy(conf.szIpAddr, "127.0.0.1");
+	//strcpy(conf.szUser, "admin");
+	//strcpy(conf.szDbName, "product_db");
+	strcpy(conf.szDnsName, "dsn_mysql");
+
+	m_pc = new ProductClient(conf);
+	int ret = m_pc->Init();
+	if (ret != 0)
+	{
+		
+		CString msg;
+		msg.Format(_T("========连接数据库失败,%s"), conf.szDnsName);
+		OutputDebugString(msg);
+#ifdef _DEBUG
+		SetTimer(QUIT_ID, 2000, NULL);
+		AfxMessageBox(msg);
+#endif
+		return -1;
+	}
+
+	return 0;
+}
+
+
 
 void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 {
@@ -1200,10 +1280,14 @@ void CMainFrame::OnTimer(UINT_PTR nIDEvent)
 
 bool CMainFrame::IsSwitchProdution(const CStringArray & arrLst)
 {
+	GetProductRule();
 	for (int i=0; i<arrLst.GetSize()-1; i++)
 	{
-		CString code1 = GetProductionCode2(arrLst.GetAt(i));
-		CString code2 = GetProductionCode2(arrLst.GetAt(i+1));
+		GetProductionLineSNAndProductionCode(arrLst.GetAt(i));
+		CString code1 = GetProductionCode(arrLst.GetAt(i), m_iProductPos, m_iProductCodeLen);
+
+		GetProductionLineSNAndProductionCode(arrLst.GetAt(i+1));
+		CString code2 = GetProductionCode(arrLst.GetAt(i+1), m_iProductPos, m_iProductCodeLen);
 		if (code1 != code2)
 		{
 			return true;

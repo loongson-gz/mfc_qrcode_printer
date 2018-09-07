@@ -103,10 +103,13 @@ public:
 	int SplitString(const CString str, CString split, std::set<CString> &strArray);
 	void PrintQRCode();
 	CString GenerateQRCodeVal();
-	void GetProductionLineSN(CString sn);
-	void GetProductionCode(CString cs);
+
+	void GetProductRule();
+	int InitDB();
+	void GetProductionLineSNAndProductionCode(CString productSN);
 	void GetErpCodeAndProductKind();
-	CString GetProductionCode2(CString cs);
+	void GetProductionLineSN(CString sn, int pos);
+	CString GetProductionCode(CString cs, int pos, int len);
 	void OnBtnprintbmp();
 	void SaveToSvr(CString csQrCode, const CStringArray & arrLst);
 	bool IsSwitchProdution(const CStringArray & arrLst);
@@ -119,6 +122,13 @@ public:
 	CString m_csErpCode;
 	CString m_csProductKind;
 	ProductClient *m_pc;
+
+	int m_iProductPos ;		//产品编号起始位置
+	int m_iProductCodeLen;	//产品编号长度
+	int m_iWorkshopPos ;	//车间编号的起始位置，从尾开始
+
+	bool m_bGetRule;
+	TBarcodeRuleLst m_ruleLst;
 };
 
 /////////////////////////////////////////////////////////////////////////////
