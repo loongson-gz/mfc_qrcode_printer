@@ -1290,6 +1290,7 @@ bool CMainFrame::IsSwitchProdution(const CStringArray & arrLst)
 		CString code2 = GetProductionCode(arrLst.GetAt(i+1), m_iProductPos, m_iProductCodeLen);
 		if (code1 != code2)
 		{
+			m_iInterval = i+1;
 			return true;
 		}
 	}

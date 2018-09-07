@@ -95,10 +95,7 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-public:
-		//生成二维码的条码间隔值
-	int m_iInterval;
-
+private:
 	int SplitString(const CString str, CString split, CStringArray & strArray);
 	int SplitString(const CString str, CString split, std::set<CString> &strArray);
 	void PrintQRCode();
@@ -113,6 +110,8 @@ public:
 	void OnBtnprintbmp();
 	void SaveToSvr(CString csQrCode, const CStringArray & arrLst);
 	bool IsSwitchProdution(const CStringArray & arrLst);
+
+	int m_iInterval;			//生成二维码的条码间隔值
 
 	int m_iSN;						//流水号
 	int m_iProductionLineSN;		//检线号
