@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include "QR_Image.h"
 
+#include "QR_Image.h"
 #include "MainFrm.h"
 #include "QR_Encode.h"
 #include "ImageView.h"
@@ -8,11 +8,15 @@
 #include "BottomView.h"
 
 #include <stdint.h>
-#include <iostream>
-#include <string>
-#include <sstream>
+//#include <iostream>
+//#include <string>
+//#include <sstream>
+#include <fileapi.h>
+//#include <stdlib.h>
+//#include <algorithm>
 #include "http_client.h"
 #include "json/json.h"
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -102,6 +106,7 @@ static int GBKToUTF8(CString& strOut, char* szSrc)
 
 
 CMainFrame::CMainFrame()
+	: m_pc(NULL)
 {
 	m_bInitSplit = FALSE;
 
@@ -111,7 +116,7 @@ CMainFrame::CMainFrame()
 	m_strSavePath.Empty();
 	m_strSavePath = _T("d:/1.bmp");
 
-	m_iInterval = 10;
+	m_iInterval = 40;
 	m_iSN = 1;
 	m_iProductionLineSN = 1;
 }
@@ -243,7 +248,7 @@ void CMainFrame::RecalcLayout(BOOL bNotify)
 		{
 			if ((cy1 > m_sizeBottomView.cy) && (rcClient.Height() < cy0 + cy1 + (CY_SPLITTER + CY_MARGIN * 2)))
 			{
-				cy1 = max(m_sizeBottomView.cy, (rcClient.Height() - (CY_SPLITTER + CY_MARGIN * 2)) - cy0);
+				cy1 = max((int)(m_sizeBottomView.cy), (rcClient.Height() - (CY_SPLITTER + CY_MARGIN * 2)) - cy0);
 			}
 
 			cy0 = (rcClient.Height() - (CY_SPLITTER + CY_MARGIN * 2)) - cy1;
@@ -261,7 +266,7 @@ void CMainFrame::RecalcLayout(BOOL bNotify)
 		{
 			if ((cx1 > m_sizeRightView.cx) && (rcClient.Width() < cx0 + cx1 + (CX_SPLITTER + CX_MARGIN * 2)))
 			{
-				cx1 = max(m_sizeRightView.cx, (rcClient.Width() - (CX_SPLITTER + CX_MARGIN * 2)) - cx0);
+				cx1 = max((int)(m_sizeRightView.cx), (rcClient.Width() - (CX_SPLITTER + CX_MARGIN * 2)) - cx0);
 			}
 
 			cx0 = (rcClient.Width() - (CX_SPLITTER + CX_MARGIN * 2)) - cx1;
@@ -358,6 +363,7 @@ void CMainFrame::ShowImage()
 		{
 			GetProductionLineSN(strArray.GetAt(0));
 			GetProductionCode(strArray.GetAt(0));
+			GetErpCodeAndProductKind();
 			m_csQrCode = GenerateQRCodeVal();
 			m_pwndBottomView->m_editSoureData.SetSel(0, -1);
 			m_pwndBottomView->m_editSoureData.Clear();
@@ -373,6 +379,7 @@ void CMainFrame::ShowImage()
 	{
 		GetProductionLineSN(strArray.GetAt(0));
 		GetProductionCode(strArray.GetAt(0));
+		GetErpCodeAndProductKind();
 		m_csQrCode = GenerateQRCodeVal();
 		CString cs = strArray.GetAt(strArray.GetSize()-1) + csSplit;
 		m_pwndBottomView->m_editSoureData.SetWindowText(cs);
@@ -907,7 +914,7 @@ void CMainFrame::OnBtnprintbmp()
 	dc.LineTo(rc.right,rc.bottom);
 
 	rc2.SetRect(nSplitLeft, rc.bottom+xPix, nRight, rc.bottom+2*fAdd);
-	dc.DrawText(_T("型号:JZT-K401B"), &rc2, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+	dc.DrawText(m_csProductKind, &rc2, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
 	//底线
 	dc.MoveTo(nSplitLeft, rc2.bottom - xPix);
 	dc.LineTo(rc2.right,rc2.bottom - xPix);
@@ -929,7 +936,7 @@ void CMainFrame::OnBtnprintbmp()
 	dc.LineTo(rc6.right,rc6.bottom - xPix);
 
 	rc8.SetRect(nSplitLeft, rc6.bottom+xPix, nRight,rc6.bottom+fAdd+yPix);
-	dc.DrawText(_T("ERP:C89205692"), &rc8, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
+	dc.DrawText(m_csErpCode, &rc8, DT_LEFT | DT_VCENTER |DT_WORDBREAK );
 
 	//底线
 	dc.MoveTo(nLeft,rc8.bottom);
@@ -1144,6 +1151,33 @@ void CMainFrame::GetProductionCode(CString cs)
 {
 	int pos = 10;
 	m_csProdutionCode = cs.Mid(pos, 5);
+}
+
+void CMainFrame::GetErpCodeAndProductKind()
+{
+	if (!m_pc)
+	{
+		stSQLConf conf;
+		memset(&conf, 0, sizeof(conf));
+		//strcpy(conf.szIpAddr, "127.0.0.1");
+		//strcpy(conf.szUser, "admin");
+		//strcpy(conf.szDbName, "product_db");
+		strcpy(conf.szDnsName, "dsn_mysql1");
+
+		m_pc = new ProductClient(conf);
+		int ret = m_pc->Init();
+		if (ret != 0)
+		{
+			SetTimer(QUIT_ID, 2000, NULL);
+			CString msg;
+			msg.Format(_T("连接数据库失败,%s"), conf.szDnsName);
+			AfxMessageBox(msg);
+		}
+	}
+	stProductInfo info;
+	m_pc->GetData(info, m_csProdutionCode.GetBuffer(0));
+	m_csErpCode.Format(_T("ERP:%s"), info.strErpCode.c_str());
+	m_csProductKind.Format(_T("型号:%s"), info.strKind.c_str());
 }
 
 CString CMainFrame::GetProductionCode2(CString cs)

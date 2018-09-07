@@ -14,6 +14,8 @@
 #include "BottomView.h"
 #include <set>
 
+#include "product_client.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame 僋儔僗
 
@@ -103,6 +105,7 @@ public:
 	CString GenerateQRCodeVal();
 	void GetProductionLineSN(CString sn);
 	void GetProductionCode(CString cs);
+	void GetErpCodeAndProductKind();
 	CString GetProductionCode2(CString cs);
 	void OnBtnprintbmp();
 	void SaveToSvr(CString csQrCode, const CStringArray & arrLst);
@@ -113,6 +116,9 @@ public:
 	CString m_csProdutionCode;		//产品条码
 	CString m_csDateTime;			//当前日期
 	CString m_csQrCode;				//生成二维码数值
+	CString m_csErpCode;
+	CString m_csProductKind;
+	ProductClient *m_pc;
 };
 
 /////////////////////////////////////////////////////////////////////////////

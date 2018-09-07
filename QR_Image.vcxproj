@@ -153,7 +153,7 @@
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <AdditionalIncludeDirectories>./3rd\curl\include;./3rd\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./3rd\poco_1.9.0\include;./3rd\curl\include;./3rd\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -174,7 +174,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>x64\Debug\QR_Image.exe</OutputFile>
-      <AdditionalLibraryDirectories>./3rd\curl\libx64;./3rd\json\libx64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./3rd\poco_1.9.0\libx64;./3rd\curl\libx64;./3rd\json\libx64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>jsoncppd.lib;libcurl_imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -235,7 +235,7 @@
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
-      <AdditionalIncludeDirectories>./3rd\curl\include;./3rd\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./3rd\poco_1.9.0\include;./3rd\curl\include;./3rd\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -256,14 +256,16 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>x64\Release\QR_Image.exe</OutputFile>
       <AdditionalDependencies>jsoncpp.lib;libcurl_imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>./3rd\curl\libx64;./3rd\json\libx64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>./3rd\poco_1.9.0\libx64;./3rd\curl\libx64;./3rd\json\libx64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BottomView.cpp" />
+    <ClCompile Include="dbhelper.cpp" />
     <ClCompile Include="http_client.cpp" />
     <ClCompile Include="ImageView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="product_client.cpp" />
     <ClCompile Include="QR_Encode.cpp" />
     <ClCompile Include="QR_Image.cpp" />
     <ClCompile Include="RightView.cpp" />
@@ -283,9 +285,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BottomView.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="dbhelper.h" />
     <ClInclude Include="http_client.h" />
     <ClInclude Include="ImageView.h" />
     <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="product_client.h" />
     <ClInclude Include="QR_Encode.h" />
     <ClInclude Include="QR_Image.h" />
     <ClInclude Include="Resource.h" />

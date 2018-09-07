@@ -16,7 +16,7 @@ IMPLEMENT_DYNCREATE(CBottomView, CFormView)
 
 CBottomView::CBottomView()
 	: CFormView(CBottomView::IDD)
-	, m_iInterval(10)
+	, m_iInterval(40)
 {
 	//{{AFX_DATA_INIT(CBottomView)
 	//}}AFX_DATA_INIT
