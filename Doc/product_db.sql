@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50548
 File Encoding         : 65001
 
-Date: 2018-09-07 16:15:54
+Date: 2018-09-07 17:15:17
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -21,9 +21,11 @@ SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS `t_barcode`;
 CREATE TABLE `t_barcode` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
+  `father` varchar(255) NOT NULL,
   `barcode` varchar(255) DEFAULT NULL,
+  `flag` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='barcode 条码';
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='father  唯一码 用与和垛码表进行关联\r\nbarcode 条码\r\nflag   是否已生成垛码的标志 0 为未生成，1为已生成';
 
 -- ----------------------------
 -- Records of t_barcode
@@ -49,6 +51,23 @@ INSERT INTO `t_barcode_rule` VALUES ('1', '6904881', '5', '6', '燃气具公司'
 INSERT INTO `t_barcode_rule` VALUES ('2', '697052662', '3', '6', '厨房科技');
 INSERT INTO `t_barcode_rule` VALUES ('3', '69507245', '4', '6', '华润代工产品');
 INSERT INTO `t_barcode_rule` VALUES ('4', '11104', '3', '0', '中燃宝代工产品');
+
+-- ----------------------------
+-- Table structure for t_buttress_code
+-- ----------------------------
+DROP TABLE IF EXISTS `t_buttress_code`;
+CREATE TABLE `t_buttress_code` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `unique_code` varchar(255) NOT NULL,
+  `buttress_code` varchar(255) NOT NULL,
+  `upload` int(11) NOT NULL DEFAULT '0',
+  `date` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=gbk COMMENT='unique_code 唯一码与t_barcode 中father 关联\r\nbuttress_code 垛码\r\nupload  是否上传到服务器 0 为未上传 1为已上传\r\ndate  生成垛码的时间方便以后自动清表';
+
+-- ----------------------------
+-- Records of t_buttress_code
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for t_product_info
