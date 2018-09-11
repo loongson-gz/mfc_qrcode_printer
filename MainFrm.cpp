@@ -1061,11 +1061,11 @@ CString CMainFrame::GenerateQRCodeVal()
 {
 	SYSTEMTIME t;
 	GetSystemTime(&t);
-
 	m_csDateTime.Format(_T("%02d%02d%02d"), t.wYear-2000, t.wMonth, t.wDay);
 
+	int type = 0;  //‘Óæﬂ 0 »»ÀÆ 1
 	CString cs;
-	cs.Format(_T("ZJ%s%02d%03d"), m_csDateTime, m_iProductionLineSN, m_iSN++);
+	cs.Format(_T("MD%s%d%02d%03d"), m_csDateTime, type, m_iProductionLineSN, m_iSN++);
 	return cs;
 }
 
@@ -1123,9 +1123,11 @@ void CMainFrame::SaveToSvr(CString csQrCode, const CStringArray &arrLst)
 	//std::string str = jsonRoot.toStyledString();
 	//OutputDebugString(str);
 
-
-	//std::string url = HttpUrl("192.168.1.116", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
+#ifdef _DEBUG
+	std::string url = HttpUrl("192.168.1.103", 8080, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
+#else
 	std::string url = HttpUrl("192.168.103.11", 8070, "/WJLPdaServer/gongdanguanli/insertChengPinShangXian");
+#endif
 
 	Json::Value response;
 	int ret = HttpPost(url, jsonItem, response);
